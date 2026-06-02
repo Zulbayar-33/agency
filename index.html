@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <title>Agency Бүртгэл</title>
+  <style>
+    body{font-family:Arial;background:#f4f6f8;padding:30px}
+    .box{max-width:850px;margin:auto;background:white;padding:25px;border-radius:14px;box-shadow:0 5px 20px #0002}
+    h2{text-align:center}
+    label{font-weight:bold;margin-top:12px;display:block}
+    input,select,textarea{width:100%;padding:11px;margin-top:5px;border:1px solid #ccc;border-radius:8px}
+    button{margin-top:20px;width:100%;padding:13px;background:#1565c0;color:white;border:0;border-radius:8px;font-size:16px;cursor:pointer}
+    button:hover{background:#0d47a1}
+    .hidden{display:none}
+    .msg{text-align:center;margin-top:15px;font-weight:bold}
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Бүртгэлийн Form</h2>
+
+  <label>Төрөл сонгох</label>
+  <select id="type" onchange="changeForm()">
+    <option value="">-- Сонгох --</option>
+    <option value="Ажил горилогч">Ажил горилогч</option>
+    <option value="Ажил олгогч">Ажил олгогч</option>
+  </select>
+
+  <form id="jobSeekerForm" class="hidden">
+    <label>Овог нэр</label><input name="Овог нэр">
+    <label>Мэргэжил</label><input name="Мэргэжил">
+    <label>Нас</label><input name="Нас" type="number">
+    <label>Хайж байгаа ажлын байр</label><input name="Хайж байгаа ажлын байр">
+    <label>Одоо ажиллаж байгаа газар</label><input name="Одоо ажиллаж байгаа газар">
+    <label>Цагийн/Тогтмол</label><input name="Цагийн/Тогтмол">
+    <label>Ажиллах боломжит цаг</label><input name="Ажиллах боломжит цаг">
+    <label>Ажиллах боломжит гариг</label><input name="Ажиллах боломжит гариг">
+  <!-- <label>НДШ төлөх хүсэлтэй эсэх</label><input name="НДШ төлөх хүсэлтэй эсэх"> -->
+    <label>Гар дээр авах хүсэлтэй цалин дээд</label><input name="Гар дээр авах хүсэлтэй цалин дээд">
+    <label>Тусгай шаардлага</label><textarea name="Тусгай шаардлага"></textarea>
+    <label>Холбоо барих утас</label><input name="Холбоо барих утас">
+    <label>Гэрийн хаяг /Дүүрэг, хороо/</label><input name="Гэрийн хаяг /Дүүрэг, хороо/">
+    <label>Имэйл хаяг</label><input name="Имэйл хаяг" type="email">
+    <button type="button" onclick="submitForm('Ажил горилогч')">Хадгалах</button>
+  </form>
+
+  <form id="employerForm" class="hidden">
+    <label>Байгууллагын чиглэл</label><input name="Байгуулалгын чиглэл">
+    <label>Байгууллага</label><input name="Байгууллага">
+    <label>Холбоо барих</label><input name="Холбоо барих">
+    <label>Ажлын байр</label><input name="Ажлын байр">
+    <label>Шаардлага</label><textarea name="Шаардлага"></textarea>
+    <label>Олгох цалин доод</label><input name="Олгох цалин доод">
+    <label>Олгох цалин дээд</label><input name="Олгох цалин дээд">
+    <label>Хөдөө /Хот</label><input name="Хөдөө /Хот">
+    <label>Цагийн/ Байнгын</label><input name="Цагийн/ Байнгын">
+    <label>Тайлбар</label><textarea name="Тайлбар"></textarea>
+    <button type="button" onclick="submitForm('Ажил олгогч')">Хадгалах</button>
+  </form>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKMSUnHB3HIkm9gO_m2FtMXYmW3mO8zmLoH2DNEwJOvBadiaAvx-Ko2QklcV1WWqBGjw/exec";
+
+function changeForm(){
+  const type = document.getElementById("type").value;
+  document.getElementById("jobSeekerForm").classList.add("hidden");
+  document.getElementById("employerForm").classList.add("hidden");
+
+  if(type === "Ажил горилогч"){
+    document.getElementById("jobSeekerForm").classList.remove("hidden");
+  }
+  if(type === "Ажил олгогч"){
+    document.getElementById("employerForm").classList.remove("hidden");
+  }
+}
+
+function submitForm(type){
+  const form = type === "Ажил горилогч"
+    ? document.getElementById("jobSeekerForm")
+    : document.getElementById("employerForm");
+
+  const data = { type:type };
+
+  [...form.elements].forEach(el=>{
+    if(el.name) data[el.name] = el.value;
+  });
+
+  document.getElementById("msg").innerText = "Хадгалж байна...";
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    body:JSON.stringify(data)
+  })
+  .then(res=>res.json())
+  .then(result=>{
+    if(result.status === "success"){
+      document.getElementById("msg").innerText = "Амжилттай хадгалагдлаа ✅";
+      form.reset();
+      document.getElementById("type").value = "";
+      changeForm();
+    }else{
+      document.getElementById("msg").innerText = "Алдаа: " + result.message;
+    }
+  })
+  .catch(err=>{
+    document.getElementById("msg").innerText = "Холболтын алдаа";
+    console.log(err);
+  });
+}
+</script>
+
+</body>
+</html>
